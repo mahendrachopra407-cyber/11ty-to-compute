@@ -1,0 +1,110 @@
+// Lights.tsx
+import React from "react";
+
+export default function Lights() {
+  return (
+    <>
+      {/* Ambient light for overall illumination */}
+      <ambientLight intensity={0.4} />
+
+      {/* Main directional light (sun) */}
+      <directionalLight
+        position={[10, 20, 10]}
+        intensity={1}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-far={50}
+        shadow-camera-left={-20}
+        shadow-camera-right={20}
+        shadow-camera-top={20}
+        shadow-camera-bottom={-20}
+      />
+
+      {/* Fill light from the side */}
+      <directionalLight position={[-5, 10, 5]} intensity={0.3} />
+    </>
+  );
+}// gameState.ts
+import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
+
+export type GamePhase = "start" | "playing" | "game_over";
+
+interface GameState {
+  phase: GamePhase;
+  score: number;
+  distance: number;
+  coins: number;
+  lives: number;
+  speed: number;
+
+  // Actions
+  startGame: () => void;
+  endGame: () => void;
+  restartGame: () => void;
+  addScore: (points: number) => void;
+  addCoin: () => void;
+  increaseDistance: (amount: number) => void;
+  loseLife: () => void;
+  increaseSpeed: () => void;
+}
+
+export const useGameState = create<GameState>()(
+  subscribeWithSelector((set, get) => ({
+    phase: "start",
+    score: 0,
+    distance: 0,
+    coins: 0,
+    lives: 3,
+    speed: 1,
+
+    startGame: () => {
+      console.log("Starting game");
+      set({ phase: "playing" });
+    },
+
+    endGame: () => {
+      console.log("Game Over");
+      set({ phase: "game_over" });
+    },
+
+    restartGame: () => {
+      console.log("Restarting game");
+      set({
+        phase: "start",
+        score: 0,
+        distance: 0,
+        coins: 0,
+        lives: 3,
+        speed: 1,
+      });
+    },
+
+    addScore: (points) => {
+      set((state) => ({ score: state.score + points }));
+    },
+
+    addCoin: () => {
+      set((state) => ({ coins: state.coins + 1, score: state.score + 10 }));
+    },
+
+    increaseDistance: (amount) => {
+      set((state) => ({ distance: state.distance + amount }));
+    },
+
+    loseLife: () => {
+      set((state) => {
+        const newLives = state.lives - 1;
+        if (newLives <= 0) {
+          return { lives: 0, phase: "game_over" };
+        }
+        return { lives: newLives };
+      });
+    },
+
+    increaseSpeed: () => {
+      set((state) => ({ speed: state.speed + 0.2 }));
+    },
+  }))
+);
